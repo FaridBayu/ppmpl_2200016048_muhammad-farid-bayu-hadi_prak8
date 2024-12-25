@@ -6,32 +6,23 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    // Ambil branch sesuai dengan pipeline trigger
-                    def selectedBranch = env.BRANCH_NAME ?: 'master'
-                    git branch: selectedBranch, url: 'https://github.com/FaridBayu/ppmpl_2200016048_muhammad-farid-bayu-hadi_prak8.git'
-                }
+                git branch: 'master', url: 'https://github.com/FaridBayu/ppmpl_2200016048_muhammad-farid-bayu-hadi_prak8.git'
             }
         }
         stage('Install Dependencies') {
             steps {
-                bat 'npm install'
+                sh 'npm install'
             }
         }
         stage('Run Unit Tests') {
-            when {
-                branch 'master'
-            }
             steps {
-                bat 'npm test'
+                sh 'npm test'
             }
         }
-        stage('Run Integration Tests') {
-            when {
-                branch 'master'
-            }
+        stage('Run Integration Tests') { 
             steps {
-                bat 'npm run test:integration'
+                echo 'Running integration tests...'
+                sh 'npm run test:integration' 
             }
         }
         stage('Build') {
@@ -40,14 +31,10 @@ pipeline {
                 // Tambahkan perintah build jika diperlukan
             }
         }
-        stage('Deploy to Staging') {
-            when {
-                branch 'master'
-            }
+        stage('Deploy') {
             steps {
-                echo 'Deploying to staging server...'
-                sh 'scp -r ./build user@staging-server:/var/www/app'
-                sh 'ssh user@staging-server "systemctl restart app-service"'
+                echo 'Deploying the application to staging...'
+                sh 'scp -r ./build user@staging-server:/path/to/deploy' 
             }
         }
     }
