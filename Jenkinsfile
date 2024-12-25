@@ -6,23 +6,32 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/FaridBayu/ppmpl_2200016048_muhammad-farid-bayu-hadi_prak8.git'
+                script {
+                    
+                    def selectedBranch = env.BRANCH_NAME ?: 'master'
+                    git branch: selectedBranch, url: 'https://github.com/FaridBayu/ppmpl_2200016048_muhammad-farid-bayu-hadi_prak8.git'
+                }
             }
         }
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                bat 'npm install'
             }
         }
         stage('Run Unit Tests') {
+            when {
+                branch 'master'
+            }
             steps {
-                sh 'npm test'
+                bat 'npm test'
             }
         }
-        stage('Run Integration Tests') { 
+        stage('Run Integration Tests') {
+            when {
+                branch 'master'
+            }
             steps {
-                echo 'Running integration tests...'
-                sh 'npm run test:integration' 
+                bat 'npm run test:integration'
             }
         }
         stage('Build') {
@@ -31,10 +40,14 @@ pipeline {
                 // Tambahkan perintah build jika diperlukan
             }
         }
-        stage('Deploy') {
+        stage('Deploy to Staging') {
+            when {
+                branch 'master'
+            }
             steps {
-                echo 'Deploying the application to staging...'
-                sh 'scp -r ./build user@staging-server:/path/to/deploy' 
+                echo 'Deploying to staging server...'
+                sh 'scp -r ./build user@staging-server:/var/www/app'
+                sh 'ssh user@staging-server "systemctl restart app-service"'
             }
         }
     }
